@@ -1,0 +1,60 @@
+groups:
+  - name: climate_monitoring
+    rules:
+      # Temperature alerts
+      - alert: TemperatureTooHigh
+        expr: climate_temperature_celsius > 35
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High temperature detected"
+          description: "Temperature is {{ $value }}°C on device {{ $labels.device_id }} in {{ $labels.location }}"
+
+      - alert: TemperatureTooLow
+        expr: climate_temperature_celsius < 10
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low temperature detected"
+          description: "Temperature is {{ $value }}°C on device {{ $labels.device_id }} in {{ $labels.location }}"
+
+      # Humidity alerts
+      - alert: HumidityTooHigh
+        expr: climate_humidity_percent > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High humidity detected"
+          description: "Humidity is {{ $value }}% on device {{ $labels.device_id }} in {{ $labels.location }}"
+
+      - alert: HumidityTooLow
+        expr: climate_humidity_percent < 20
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low humidity detected"
+          description: "Humidity is {{ $value }}% on device {{ $labels.device_id }} in {{ $labels.location }}"
+
+      # Data availability alerts
+      - alert: NoRecentData
+        expr: increase(climate_data_points_total[10m]) == 0
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: "No recent data from climate sensor"
+          description: "No data received from device {{ $labels.device_id }} in the last 10 minutes"
+
+      # Backend health
+      - alert: BackendDown
+        expr: up{job="climate-backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Climate backend is down"
+          description: "The climate monitoring backend service is not responding"
